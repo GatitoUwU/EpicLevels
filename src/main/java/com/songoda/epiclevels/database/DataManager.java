@@ -102,26 +102,28 @@ public class DataManager extends DataManagerAbstract {
     }
 
     public void createPlayer(EPlayer ePlayer) {
-        this.runAsync(() -> {
-            try (Connection connection = this.databaseConnector.getConnection()) {
-                String createPlayer = "INSERT INTO " + this.getTablePrefix() + "players (uuid, experience, mob_kills, player_kills, deaths, killstreak, best_killstreak) VALUES (?, ?, ?, ?, ?, ?, ?)";
-                PreparedStatement statement = connection.prepareStatement(createPlayer);
-                statement.setString(1, ePlayer.getUniqueId().toString());
+        this.runAsync(() -> createPlayerSync(ePlayer));
+    }
 
-                statement.setDouble(2, ePlayer.getExperience());
+    public void createPlayerSync(EPlayer ePlayer) {
+        try (Connection connection = this.databaseConnector.getConnection()) {
+            String createPlayer = "INSERT INTO " + this.getTablePrefix() + "players (uuid, experience, mob_kills, player_kills, deaths, killstreak, best_killstreak) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            PreparedStatement statement = connection.prepareStatement(createPlayer);
+            statement.setString(1, ePlayer.getUniqueId().toString());
 
-                statement.setInt(3, ePlayer.getMobKills());
-                statement.setInt(4, ePlayer.getPlayerKills());
-                statement.setInt(5, ePlayer.getDeaths());
-                statement.setInt(6, ePlayer.getKillstreak());
-                statement.setInt(7, ePlayer.getBestKillstreak());
-                statement.executeUpdate();
+            statement.setDouble(2, ePlayer.getExperience());
 
-                updater.sendPlayerUpdate(ePlayer.getUniqueId());
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        });
+            statement.setInt(3, ePlayer.getMobKills());
+            statement.setInt(4, ePlayer.getPlayerKills());
+            statement.setInt(5, ePlayer.getDeaths());
+            statement.setInt(6, ePlayer.getKillstreak());
+            statement.setInt(7, ePlayer.getBestKillstreak());
+            statement.executeUpdate();
+
+            updater.sendPlayerUpdate(ePlayer.getUniqueId());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     public void deletePlayer(EPlayer ePlayer) {
@@ -214,19 +216,21 @@ public class DataManager extends DataManagerAbstract {
     }
 
     public void getPlayerOrCreate(UUID uuid, Consumer<EPlayer> callback) {
-        this.async(() -> {
-            EPlayer[] array = new EPlayer[1];
-            selectPlayer(uuid, data -> array[0] = data);
+        this.async(() -> callback.accept(getPlayerOrCreateSync(uuid)));
+    }
 
-            EPlayer ePlayer = array[0];
+    public EPlayer getPlayerOrCreateSync(UUID uuid) {
+        EPlayer[] array = new EPlayer[1];
+        selectPlayer(uuid, data -> array[0] = data);
 
-            if (ePlayer == null) {
-                ePlayer = new EPlayer(uuid);
-                createPlayer(ePlayer);
-            }
+        EPlayer ePlayer = array[0];
 
-            callback.accept(ePlayer);
-        });
+        if (ePlayer == null) {
+            ePlayer = new EPlayer(uuid);
+            createPlayer(ePlayer);
+        }
+
+        return ePlayer;
     }
 
     public void getBoosts(Consumer<Map<UUID, Boost>> callback) {

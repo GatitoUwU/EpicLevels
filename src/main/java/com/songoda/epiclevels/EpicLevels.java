@@ -29,6 +29,7 @@ import com.songoda.epiclevels.database.DataManager;
 import com.songoda.epiclevels.database.migrations._1_InitialMigration;
 import com.songoda.epiclevels.killstreaks.KillstreakManager;
 import com.songoda.epiclevels.levels.LevelManager;
+import com.songoda.epiclevels.listeners.DataListeners;
 import com.songoda.epiclevels.listeners.DeathListeners;
 import com.songoda.epiclevels.listeners.LoginListeners;
 import com.songoda.epiclevels.managers.EntityManager;
@@ -99,7 +100,12 @@ public class EpicLevels extends SongodaPlugin {
         // Listener Registration
         guiManager.init();
         pluginManager.registerEvents(new DeathListeners(this), this);
-        pluginManager.registerEvents(new LoginListeners(this), this);
+
+        if (Settings.USE_MIDNIGHT.getBoolean()) {
+            pluginManager.registerEvents(new DataListeners(this), this);
+        } else {
+            pluginManager.registerEvents(new LoginListeners(this), this);
+        }
 
         // Load Commands
         this.commandManager = new CommandManager(this);
@@ -169,7 +175,9 @@ public class EpicLevels extends SongodaPlugin {
                 new _1_InitialMigration());
         this.dataMigrationManager.runMigrations();
 
-        this.dataManager.getPlayers((player) -> this.playerManager.addPlayers(player));
+        if (Settings.LOAD_ALL_PLAYERS.getBoolean()) {
+            this.dataManager.getPlayers((player) -> this.playerManager.addPlayers(player));
+        }
         this.dataManager.getBoosts((uuidBoostMap -> this.boostManager.addBoosts(uuidBoostMap)));
     }
 

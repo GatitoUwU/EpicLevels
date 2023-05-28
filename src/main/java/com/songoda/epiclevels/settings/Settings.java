@@ -146,6 +146,9 @@ public class Settings {
             "The enabled language file.",
             "More language files (if available) can be found in the plugins data folder.");
 
+    public static final ConfigSetting LOAD_ALL_PLAYERS = new ConfigSetting(config, "DataSystem.LoadEveryone", false, "Set to 'true' to bulk load players when server starts.");
+    public static final ConfigSetting USE_MIDNIGHT = new ConfigSetting(config, "DataSystem.UseMidnight", false, "Set to 'true' to use Midnight for data loading.");
+
     public static final ConfigSetting MYSQL_ENABLED = new ConfigSetting(config, "MySQL.Enabled", false, "Set to 'true' to use MySQL instead of SQLite for data storage.");
     public static final ConfigSetting MYSQL_HOSTNAME = new ConfigSetting(config, "MySQL.Hostname", "localhost");
     public static final ConfigSetting MYSQL_PORT = new ConfigSetting(config, "MySQL.Port", 3306);
